@@ -22,7 +22,7 @@ class TaskApiTest extends TestCase
         $userResponse->assertStatus(200);
 
         $project = Project::factory()->create(['user_id' => $user->id]);
-        
+
         $taskData = [
             'title' => 'Test Task',
             'description' => 'A test task description',
@@ -36,18 +36,18 @@ class TaskApiTest extends TestCase
         $response = $this->postJson('/api/tasks', $taskData, ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(201)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'title',
-                        'description',
-                        'status',
-                        'priority',
-                        'project_id',
-                        'assigned_to',
-                        'due_date',
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'title',
+                    'description',
+                    'status',
+                    'priority',
+                    'project_id',
+                    'assigned_to',
+                    'due_date',
+                ]
+            ]);
 
         $this->assertDatabaseHas('tasks', [
             'title' => 'Test Task',
@@ -75,7 +75,7 @@ class TaskApiTest extends TestCase
         ], ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(200);
-        
+
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'status' => 'completed',
@@ -92,7 +92,7 @@ class TaskApiTest extends TestCase
         $userResponse->assertStatus(200);
 
         $project = Project::factory()->create(['user_id' => $user->id]);
-        
+
         Task::factory()->create(['project_id' => $project->id, 'status' => 'pending']);
         Task::factory()->create(['project_id' => $project->id, 'status' => 'completed']);
         Task::factory()->create(['project_id' => $project->id, 'status' => 'in_progress']);
@@ -100,7 +100,7 @@ class TaskApiTest extends TestCase
         $response = $this->getJson('/api/tasks?status=completed', ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(200);
-        
+
         $tasks = $response->json('data');
         $this->assertCount(1, $tasks);
         $this->assertEquals('completed', $tasks[0]['status']);
@@ -144,7 +144,8 @@ class TaskApiTest extends TestCase
     /**
      * Test that when fetching tasks, the assigned user details are included
      */
-    public function test_can_show_task_with_related_data() {
+    public function test_can_show_task_with_related_data()
+    {
         $user = User::factory()->create();
         $userResponse = $this->postJson('/api/login', [
             'email' => $user->email,

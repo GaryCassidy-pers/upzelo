@@ -17,4 +17,3 @@ class TaskCollection extends ResourceCollection
         return parent::toArray($request);
     }
 }
-

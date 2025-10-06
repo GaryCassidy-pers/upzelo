@@ -15,7 +15,7 @@ class ProjectApiTest extends TestCase
     public function test_can_create_project(): void
     {
         $user = User::factory()->create();
-        
+
         $userResponse = $this->postJson('/api/login', [
             'email' => $user->email,
             'password' => 'password',
@@ -31,16 +31,16 @@ class ProjectApiTest extends TestCase
         $response = $this->postJson('/api/projects', $projectData, ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(201)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'name',
-                        'description',
-                        'user_id',
-                        'created_at',
-                        'updated_at',
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'description',
+                    'user_id',
+                    'created_at',
+                    'updated_at',
+                ]
+            ]);
 
         $this->assertDatabaseHas('projects', [
             'name' => 'Test Project',
@@ -62,16 +62,16 @@ class ProjectApiTest extends TestCase
         $response = $this->getJson('/api/projects', ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        '*' => [
-                            'id',
-                            'name',
-                            'description',
-                            'tasks_count',
-                        ]
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'description',
+                        'tasks_count',
                     ]
-                ]);
+                ]
+            ]);
     }
 
 
@@ -86,7 +86,7 @@ class ProjectApiTest extends TestCase
 
         // Create a project with tasks
         $project = Project::factory()->create(['user_id' => $user->id]);
-    
+
         $task = Task::factory()->create([
             'project_id' => $project->id,
             'assigned_to' => $user->id,
@@ -98,29 +98,30 @@ class ProjectApiTest extends TestCase
         $response = $this->getJson('/api/projects/' . $project->id, ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'name',
-                        'description',
-                        'tasks_count',
-                        'completed_tasks_count',
-                        'tasks' => [
-                            '*' => [
-                                'id',
-                                'title',
-                                'description',
-                                'status',
-                                'priority',
-                                'due_date',
-                                'assigned_to',
-                            ]
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'description',
+                    'tasks_count',
+                    'completed_tasks_count',
+                    'tasks' => [
+                        '*' => [
+                            'id',
+                            'title',
+                            'description',
+                            'status',
+                            'priority',
+                            'due_date',
+                            'assigned_to',
                         ]
                     ]
-                ]);
+                ]
+            ]);
     }
 
-    public function test_project_validation_rules() {
+    public function test_project_validation_rules()
+    {
         $user = User::factory()->create();
         $userResponse = $this->postJson('/api/login', [
             'email' => $user->email,

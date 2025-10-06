@@ -38,7 +38,7 @@ class Project extends Model
      */
     public function getCompletionPercentageAttribute(): float
     {
-       // If we have tasks_count attribute, use it
+        // If we have tasks_count attribute, use it
         if (array_key_exists('tasks_count', $this->attributes)) {
             $totalTasks = (int) $this->attributes['tasks_count'];
         } else {

@@ -17,7 +17,7 @@ use App\Http\Controllers\TaskController;
 |
 */
 
-//Temporary register router to add user while testing in postman
+//Temporary register router to add user while testing in postman, presumably will be done in front end app
 Route::post('register',[UserAuthController::class,'register']);
 Route::post('login',[UserAuthController::class,'login']);
 

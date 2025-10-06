@@ -19,4 +19,3 @@ class ProjectResource extends JsonResource
         return $resource;
     }
 }
-

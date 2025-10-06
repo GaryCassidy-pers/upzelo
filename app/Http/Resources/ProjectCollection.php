@@ -17,4 +17,3 @@ class ProjectCollection extends ResourceCollection
         return parent::toArray($request);
     }
 }
-
