@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,18 +17,22 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+//Temporary register router to add user while testing in postman
+Route::post('register',[UserAuthController::class,'register']);
+Route::post('login',[UserAuthController::class,'login']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/user',  function (Request $request) {
+        return $request->user();
+    });
+
+    
+    Route::post('logout',[UserAuthController::class,'logout']);
+
+    Route::get('/projects', [ProjectController::class, 'index']);
+    Route::post('/projects', [ProjectController::class, 'store']);
+    Route::get('/projects/{id}', [ProjectController::class, 'show']);
+    Route::get('/tasks', [TaskController::class, 'index']);
+    Route::post('/tasks', [TaskController::class, 'store']);
+    Route::put('/tasks/{id}', [TaskController::class, 'update']);
 });
-
-// TODO: Implement your API routes here
-// Example structure:
-// Route::apiResource('projects', ProjectController::class);
-// Route::apiResource('tasks', TaskController::class);
-
-Route::get('/api/projects', [App\Http\Controllers\ProjectController::class, 'index']);
-Route::post('/api/projects', [App\Http\Controllers\ProjectController::class, 'store']);
-Route::get('/api/projects/{id}', [App\Http\Controllers\ProjectController::class, 'show']);
-Route::get('/api/tasks', [App\Http\Controllers\TaskController::class, 'index']);
-Route::post('/api/tasks', [App\Http\Controllers\TaskController::class, 'store']);
-Route::put('/api/tasks/{id}', [App\Http\Controllers\TaskController::class, 'update']);
