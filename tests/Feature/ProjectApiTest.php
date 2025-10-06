@@ -15,13 +15,19 @@ class ProjectApiTest extends TestCase
     {
         $user = User::factory()->create();
         
+        $userResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $userResponse->assertStatus(200);
+
         $projectData = [
             'name' => 'Test Project',
             'description' => 'A test project description',
             'user_id' => $user->id,
         ];
 
-        $response = $this->postJson('/api/projects', $projectData);
+        $response = $this->postJson('/api/projects', $projectData, ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(201)
                 ->assertJsonStructure([
@@ -44,9 +50,15 @@ class ProjectApiTest extends TestCase
     public function test_can_list_projects(): void
     {
         $user = User::factory()->create();
+        $userResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $userResponse->assertStatus(200);
+        
         Project::factory()->count(3)->create(['user_id' => $user->id]);
 
-        $response = $this->getJson('/api/projects');
+        $response = $this->getJson('/api/projects', ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(200)
                 ->assertJsonStructure([

@@ -15,6 +15,12 @@ class TaskApiTest extends TestCase
     public function test_can_create_task_and_assign_to_project(): void
     {
         $user = User::factory()->create();
+        $userResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $userResponse->assertStatus(200);
+
         $project = Project::factory()->create(['user_id' => $user->id]);
         
         $taskData = [
@@ -27,7 +33,7 @@ class TaskApiTest extends TestCase
             'due_date' => '2024-12-31',
         ];
 
-        $response = $this->postJson('/api/tasks', $taskData);
+        $response = $this->postJson('/api/tasks', $taskData, ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(201)
                 ->assertJsonStructure([
@@ -52,6 +58,12 @@ class TaskApiTest extends TestCase
     public function test_can_update_task_status(): void
     {
         $user = User::factory()->create();
+        $userResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $userResponse->assertStatus(200);
+
         $project = Project::factory()->create(['user_id' => $user->id]);
         $task = Task::factory()->create([
             'project_id' => $project->id,
@@ -60,7 +72,7 @@ class TaskApiTest extends TestCase
 
         $response = $this->putJson("/api/tasks/{$task->id}", [
             'status' => 'completed',
-        ]);
+        ], ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(200);
         
@@ -73,13 +85,19 @@ class TaskApiTest extends TestCase
     public function test_can_filter_tasks_by_status(): void
     {
         $user = User::factory()->create();
+        $userResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $userResponse->assertStatus(200);
+
         $project = Project::factory()->create(['user_id' => $user->id]);
         
         Task::factory()->create(['project_id' => $project->id, 'status' => 'pending']);
         Task::factory()->create(['project_id' => $project->id, 'status' => 'completed']);
         Task::factory()->create(['project_id' => $project->id, 'status' => 'in_progress']);
 
-        $response = $this->getJson('/api/tasks?status=completed');
+        $response = $this->getJson('/api/tasks?status=completed', ['Authorization' => 'Bearer ' . $userResponse->json('token')]);
 
         $response->assertStatus(200);
         
