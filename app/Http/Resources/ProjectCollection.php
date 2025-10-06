@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class TaskCollection extends ResourceCollection
+class ProjectCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.
@@ -17,3 +17,4 @@ class TaskCollection extends ResourceCollection
         return parent::toArray($request);
     }
 }
+

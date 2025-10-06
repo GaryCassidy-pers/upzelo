@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\ProjectCollection;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Js;
 
 class ProjectController extends Controller
@@ -28,9 +29,11 @@ class ProjectController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $request->request->add(['user_id' => Auth::user()->id]);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            // Add other fields as needed
+            'description' => 'nullable|string',
+            'user_id' => 'required|exists:users,id',
         ]);
 
         $project = Project::create($validated);

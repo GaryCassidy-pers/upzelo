@@ -29,6 +29,9 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'project_id' => 'required|exists:projects,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'status' => 'nullable|in:pending,in_progress,completed',
         ]);
 
         $task = Task::create($validated);
@@ -42,14 +45,15 @@ class TaskController extends Controller
      * @param Task $task
      * @return JsonResponse
      */
-    public function update($id)
+    public function update(Request $request, $id)
     {
-        $task = Task::find($id);
+        $task = Task::findOrFail($id);
+        $validated = $request->validate([
+            'status' => 'required|in:pending,in_progress,completed',
+        ]);
 
-        if (!$task) {
-            return response()->json(['message' => 'Task not found'], 404);
-        }
+        $task->update($validated);
 
-        return new TaskResource($task)->response()->setStatusCode(200);
+        return (new TaskResource($task))->response()->setStatusCode(200);
     }
 }
