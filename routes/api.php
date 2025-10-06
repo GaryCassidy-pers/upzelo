@@ -22,3 +22,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Example structure:
 // Route::apiResource('projects', ProjectController::class);
 // Route::apiResource('tasks', TaskController::class);
+
+Route::get('/api/projects', [App\Http\Controllers\ProjectController::class, 'index']);
+Route::post('/api/projects', [App\Http\Controllers\ProjectController::class, 'store']);
+Route::get('/api/projects/{id}', [App\Http\Controllers\ProjectController::class, 'show']);
+Route::get('/api/tasks', [App\Http\Controllers\TaskController::class, 'index']);
+Route::post('/api/tasks', [App\Http\Controllers\TaskController::class, 'store']);
+Route::put('/api/tasks/{id}', [App\Http\Controllers\TaskController::class, 'update']);
