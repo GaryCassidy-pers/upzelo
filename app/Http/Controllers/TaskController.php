@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Http\Resources\TaskResource;
 use App\Http\Resources\TaskCollection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Js;
 
 class TaskController extends Controller
 {
@@ -14,7 +16,7 @@ class TaskController extends Controller
      * @return JsonResponse
      * $todo Consider pagination of results and selecting specific fields to return as data set grows
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $validated = request()->validate([
             'status' => 'nullable|in:pending,in_progress,completed',
@@ -38,7 +40,7 @@ class TaskController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -59,14 +61,14 @@ class TaskController extends Controller
      * @param Task $task
      * @return JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Task $task): JsonResponse
     {
-        $task = Task::findOrFail($id);
         $validated = $request->validate([
             'status' => 'required|in:pending,in_progress,completed',
         ]);
 
         $task->update($validated);
+        $task->load('assignedUser');
 
         return (new TaskResource($task))->response()->setStatusCode(200);
     }
