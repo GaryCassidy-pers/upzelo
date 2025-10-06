@@ -14,7 +14,9 @@ class ProjectResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $resource = parent::toArray($request);
+        $resource['completion_percentage'] = $this->getCompletionPercentageAttribute();
+        return $resource;
     }
 }
 
