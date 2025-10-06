@@ -106,7 +106,97 @@ class TaskApiTest extends TestCase
         $this->assertEquals('completed', $tasks[0]['status']);
     }
 
-    // Add more test stubs for candidates to implement (OPTIONAL):
-    // test_can_show_task_with_related_data()
-    // test_task_validation_rules()
+    /**
+     * Test validation rules when creating a task
+     */
+    public function test_task_validation_rules()
+    {
+        $user = User::factory()->create();
+        $userResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $userResponse->assertStatus(200);
+
+        $token = $userResponse->json('token');
+
+        // Attempt to create a task without required fields (title, project_id)
+        $response = $this->postJson('/api/tasks', [
+            'description' => 'Missing title and project',
+        ], ['Authorization' => 'Bearer ' . $token]);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure([
+                'message',
+                'errors',
+                'status',
+            ]);
+
+        $payload = $response->json();
+        $this->assertEquals('Validation failed', $payload['message']);
+        $this->assertEquals(422, $payload['status']);
+        $this->assertArrayHasKey('title', $payload['errors']);
+        $this->assertArrayHasKey('project_id', $payload['errors']);
+        $this->assertNotEmpty($payload['errors']['title']);
+        $this->assertNotEmpty($payload['errors']['project_id']);
+    }
+
+    /**
+     * Test that when fetching tasks, the assigned user details are included
+     */
+    public function test_can_show_task_with_related_data() {
+        $user = User::factory()->create();
+        $userResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+        $userResponse->assertStatus(200);
+
+        $token = $userResponse->json('token');
+
+        // Create a project
+        $project = Project::factory()->create(['user_id' => $user->id]);
+
+        // Create a task linked to project
+        $task = Task::factory()->create([
+            'title' => 'API Task',
+            'project_id' => $project->id,
+            'assigned_to' => $user->id,
+        ]);
+
+        // Fetch tasks and assert the assigned_user is present
+        $taskResponse = $this->getJson('/api/tasks', ['Authorization' => 'Bearer ' . $token]);
+        $taskResponse->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'title',
+                        'assigned_user' => [
+                            'id',
+                            'email',
+                            'name',
+                        ],
+                    ]
+                ]
+            ]);
+
+        $tasks = $taskResponse->json('data');
+        $this->assertNotEmpty($tasks);
+
+        // Find the created task by title and assert assigned_user matches created user
+        $found = null;
+        foreach ($tasks as $task) {
+            if ($task['title'] === 'API Task') {
+                $found = $task;
+                break;
+            }
+        }
+
+        $this->assertNotNull($found, 'Created task not found in task list');
+        $this->assertArrayHasKey('assigned_user', $found);
+        $this->assertEquals($user->id, $found['assigned_user']['id']);
+        $this->assertEquals($user->email, $found['assigned_user']['email']);
+        $this->assertEquals($user->name, $found['assigned_user']['name']);
+    }
 }
