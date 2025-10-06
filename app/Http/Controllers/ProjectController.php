@@ -19,7 +19,14 @@ class ProjectController extends Controller
      */
     public function index(): JsonResponse
     {
-        return new ProjectCollection(Project::all())->response()->setStatusCode(200);
+        // Eager-load total tasks count and completed tasks count
+        $projects = Project::with('tasks')
+            ->withCount('tasks')
+            ->withCount(['tasks as completed_tasks_count' => function ($query) {
+                $query->where('status', 'completed');
+            }])
+            ->get();
+        return new ProjectCollection($projects)->response()->setStatusCode(200);
     }
 
     /**
@@ -37,6 +44,13 @@ class ProjectController extends Controller
         ]);
 
         $project = Project::create($validated);
+        // Reload the model with counts and relations needed by the resource
+        $project = Project::with('tasks')
+            ->withCount('tasks')
+            ->withCount(['tasks as completed_tasks_count' => function ($query) {
+                $query->where('status', 'completed');
+            }])
+            ->find($project->id);
 
         return new ProjectResource($project)->response()->setStatusCode(201);
     }
@@ -48,7 +62,12 @@ class ProjectController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $project = Project::findOrFail($id);
+        $project = Project::with('tasks')
+            ->withCount('tasks')
+            ->withCount(['tasks as completed_tasks_count' => function ($query) {
+                $query->where('status', 'completed');
+            }])
+            ->findOrFail($id);
         return new ProjectResource($project)->response()->setStatusCode(200);
     }
 }
