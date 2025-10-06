@@ -16,7 +16,21 @@ class TaskController extends Controller
      */
     public function index()
     {
-        return new TaskCollection(Task::all())->response()->setStatusCode(200);
+        $validated = request()->validate([
+            'status' => 'nullable|in:pending,in_progress,completed',
+        ]);
+        if (isset($validated['status'])) {
+            return new TaskCollection(
+                Task::where('status', $validated['status'])
+                    ->with('assignedUser')
+                    ->get()
+            )->response()->setStatusCode(200);
+        } else {
+            return new TaskCollection(
+                Task::with('assignedUser')
+                    ->get()
+            )->response()->setStatusCode(200);
+        }
     }
 
     /**
@@ -36,7 +50,7 @@ class TaskController extends Controller
 
         $task = Task::create($validated);
 
-        return new TaskResource($task)->response()->setStatusCode(201);
+        return new TaskResource(Task::with('assignedUser')->find($task->id))->response()->setStatusCode(201);
     }
 
     /**
